@@ -34,7 +34,7 @@ app.post("/chat", async (req, res) => {
             Here are some frequently asked questions (FAQs) and answers:
                       
             Q: How much does a website cost?
-            A: It depends on complexity, but our prices typically start from ₹5,000 and go up based on features.
+            A: It depends on complexity and based on features.
                       
             Q: How long does it take to deliver a website?
             A: Simple websites can be ready in 3-5 days. More complex ones may take 1-2 weeks.
