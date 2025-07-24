@@ -13,12 +13,11 @@ const writeToSheet = async (values, range = "Sheet1!A1") => {
   try {
     const authClient = await auth.getClient();
     const sheets = google.sheets({ version: "v4", auth: authClient });
-    const name = values[0][0];
     const email = values[0][1];
 
     const read = await sheets.spreadsheets.values.get({
       spreadsheetId: process.env.SHEET_ID,
-      range: "Sheet1!A2:B", // Adjust based on your data layout
+      range: "Sheet1!A2:B",
     });
 
     const existingEmails = read.data.values?.map((row) => row[1]) || [];

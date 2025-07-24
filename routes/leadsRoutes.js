@@ -8,7 +8,7 @@ const router = express.Router();
 // @access Public
 router.post("/", async (req, res) => {
   try {
-    const { name, email, phone, message } = req.body;
+    const { name, email, phone, message, businessType, projectGoal } = req.body;
 
     if (!name || !email) {
       return res
@@ -19,7 +19,15 @@ router.post("/", async (req, res) => {
     const timestamp = `${new Date().toLocaleDateString()} | ${new Date().toLocaleTimeString()}`;
 
     const result = await writeToSheet([
-      [name, email, phone || "", message || "", timestamp],
+      [
+        name,
+        email,
+        phone || "",
+        message || "",
+        businessType,
+        projectGoal,
+        timestamp,
+      ],
     ]);
 
     if (result.success) {
