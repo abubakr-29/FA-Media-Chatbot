@@ -2,9 +2,27 @@ const axios = require("axios");
 const validator = require("validator");
 
 /**
+ * Clean up email from voice transcription
+ */
+const cleanVoiceEmail = (email) => {
+  return email
+    .toLowerCase()
+    .replace(/\s+/g, "") // Remove spaces
+    .replace(/at/g, "@") // "at" -> "@"
+    .replace(/dot/g, ".") // "dot" -> "."
+    .replace(/[^\w@.-]/g, ""); // Remove special chars except valid email chars
+};
+
+/**
  * Professional email validator for sales conversations
  */
-const validateEmail = async (email) => {
+const validateEmail = async (email, isFromVoice = false) => {
+  // Clean up voice transcription if needed
+  if (isFromVoice) {
+    email = cleanVoiceEmail(email);
+    console.log(`🎤 Cleaned voice email: ${email}`);
+  }
+
   console.log(`🔍 Validating email: ${email}`);
 
   const result = {
@@ -17,7 +35,9 @@ const validateEmail = async (email) => {
 
   // Step 1: Basic format check
   if (!email || !validator.isEmail(email)) {
-    result.message = "Could you double-check that email address?";
+    result.message = isFromVoice
+      ? "I heard an email but couldn't quite catch it clearly. Could you spell it out for me?"
+      : "Could you double-check that email address?";
     console.log(`❌ Invalid format: ${email}`);
     return result;
   }
@@ -63,22 +83,25 @@ const validateEmail = async (email) => {
 
       if (data.result === "deliverable") {
         result.isValid = true;
-        result.message =
-          "Perfect. A team member will reach out within 24 hours with your personalized strategy.";
+        result.message = isFromVoice
+          ? "Perfect! I got your email. A team member will reach out within 24 hours with your personalized strategy."
+          : "Perfect. A team member will reach out within 24 hours with your personalized strategy.";
         result.confidence = "high";
         result.shouldContinueSales = true;
         console.log(`✅ Email verified: ${email}`);
         return result;
       } else if (data.result === "undeliverable") {
-        result.message =
-          "That email doesn't seem to be active. Mind trying another one?";
+        result.message = isFromVoice
+          ? "I heard an email but it doesn't seem to be active. Could you try saying another one?"
+          : "That email doesn't seem to be active. Mind trying another one?";
         result.confidence = "high";
         console.log(`❌ Email undeliverable: ${email}`);
         return result;
       } else if (data.result === "risky") {
         result.isValid = true;
-        result.message =
-          "Got it. Our team will reach out shortly with next steps.";
+        result.message = isFromVoice
+          ? "Got it! Our team will reach out shortly with next steps."
+          : "Got it. Our team will reach out shortly with next steps.";
         result.confidence = "medium";
         result.shouldContinueSales = true;
         console.log(`⚠️ Email risky but accepted: ${email}`);
@@ -86,8 +109,9 @@ const validateEmail = async (email) => {
       } else {
         // Unknown result - accept but be cautious
         result.isValid = true;
-        result.message =
-          "Thanks. A team member will be in touch within 24 hours.";
+        result.message = isFromVoice
+          ? "Thanks! A team member will be in touch within 24 hours."
+          : "Thanks. A team member will be in touch within 24 hours.";
         result.confidence = "medium";
         result.shouldContinueSales = true;
         console.log(`❓ Email unknown but accepted: ${email}`);
@@ -98,7 +122,9 @@ const validateEmail = async (email) => {
 
       // Fallback - accept email but note the issue
       result.isValid = true;
-      result.message = "Thanks. Our team will contact you within 24 hours.";
+      result.message = isFromVoice
+        ? "Thanks! Our team will contact you within 24 hours."
+        : "Thanks. Our team will contact you within 24 hours.";
       result.confidence = "low";
       result.shouldContinueSales = true;
       return result;
@@ -107,7 +133,9 @@ const validateEmail = async (email) => {
     // No Hunter.io API key - basic validation only
     console.log(`⚠️ No Hunter.io API key, using basic validation`);
     result.isValid = true;
-    result.message = "Perfect. A team member will reach out shortly.";
+    result.message = isFromVoice
+      ? "Perfect! A team member will reach out shortly."
+      : "Perfect. A team member will reach out shortly.";
     result.confidence = "low";
     result.shouldContinueSales = true;
     return result;
